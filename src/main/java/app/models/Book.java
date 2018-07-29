@@ -9,24 +9,24 @@ import java.util.Set;
 @Entity
 @Table(name = "book")
 public class Book {
-
     @Id
-    Integer id;
+    Long id;
 
     @Column(name = "name")
     private String name;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "book")
-    private Set<Author> users;
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "author_id", nullable = false)
+    private Author author;
 
     public Book() {
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -38,11 +38,20 @@ public class Book {
         this.name = name;
     }
 
-    public Set<Author> getUsers() {
-        return users;
+    public Author getAuthor() {
+        return author;
     }
 
-    public void setUsers(Set<Author> users) {
-        this.users = users;
+    public void setAuthor(Author author) {
+        this.author = author;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", author=" + author +
+                '}';
     }
 }

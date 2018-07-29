@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Created by Andrey Nazarov on 7/27/2018.
  */
@@ -15,6 +17,11 @@ import org.springframework.stereotype.Service;
 public class BookServiceImpl implements BookService {
     @Autowired
     private BookRepository bookRepository;
+
+    @Override
+    public List<Book> findAll() {
+        return this.bookRepository.findAll();
+    }
 
     @Override
     public Book findById(Long id) {
@@ -35,5 +42,4 @@ public class BookServiceImpl implements BookService {
     public void deleteById(Long id) {
         this.bookRepository.delete(id);
     }
-
 }

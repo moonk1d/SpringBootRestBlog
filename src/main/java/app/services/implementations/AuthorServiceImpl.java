@@ -4,10 +4,14 @@ import app.models.Author;
 import app.repositories.AuthorRepository;
 import app.services.interfaces.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
  */
+@Service
+@Primary
 public class AuthorServiceImpl implements AuthorService {
     @Autowired
     private AuthorRepository authorRepository;

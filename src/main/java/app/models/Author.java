@@ -1,6 +1,7 @@
 package app.models;
 
 import javax.persistence.*;
+import java.util.Set;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
@@ -10,7 +11,7 @@ import javax.persistence.*;
 public class Author {
 
     @Id
-    private Integer id;
+    private Long id;
 
     @Column(name = "name")
     private String name;
@@ -18,18 +19,17 @@ public class Author {
     @Column(name = "last_name")
     private String lastName;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "author")
+    private Set<Book> books;
 
     public Author() {
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -49,11 +49,20 @@ public class Author {
         this.lastName = lastName;
     }
 
-    public Book getBook() {
-        return book;
+    public Set<Book> getBooks() {
+        return books;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
+    public void setBooks(Set<Book> books) {
+        this.books = books;
+    }
+
+    @Override
+    public String toString() {
+        return "Author{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
     }
 }
