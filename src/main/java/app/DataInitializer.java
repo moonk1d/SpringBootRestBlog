@@ -6,11 +6,13 @@ import app.models.Role;
 import app.models.User;
 import app.services.interfaces.CommentService;
 import app.services.interfaces.PostService;
+
 import app.services.interfaces.RoleService;
 import app.services.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+
 import org.springframework.stereotype.Component;
 
 /**

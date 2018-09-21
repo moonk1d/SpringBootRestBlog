@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
 
 <head>
     <title>Spring MVC Blog</title>
@@ -8,6 +9,30 @@
 <body>
 
 Hello
+
+<main id="books">
+    <h1>Books</h1>
+    <table id="bookTable" th:each="b : ${bookList}">
+        <tr>
+            <th>id</th>
+            <th>name</th>
+<!--            <th>author</th> -->
+        </tr>
+        <tr>
+            <td th:text="${b.id}">Book Id</td>
+            <td th:text="${b.name}">Book name</td>
+<!--            <td th:text="${b.author.id}">Author</td> -->
+        </tr>
+    </table>
+
+    <a href="users.html" th:href="@{/users}">Users</a>
+
+    <div sec:authorize="isAuthenticated()" id="logged-in-info"><span>Hello, <b><span sec:authentication="name"></span></b></span>
+        <form method="post" th:action="@{/logout}">
+            <input type="submit" value="Logout"/>
+        </form>
+    </div>
+</main>
 
 </body>
 
