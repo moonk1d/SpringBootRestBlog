@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface UserService {
     User findById(Long id);
 
+    User findByUsername(String username);
+
     User create(User author);
 
     User edit(User author);

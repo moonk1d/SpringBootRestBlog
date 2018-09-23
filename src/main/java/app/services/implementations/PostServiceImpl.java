@@ -27,11 +27,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post findById(Long id) {
-        try {
-            return this.postRepository.findById(id).get();
-        } catch (NoSuchElementException e){
-            throw new ResourceNotFoundException();
-        }
+        return this.postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
     }
 
     @Override

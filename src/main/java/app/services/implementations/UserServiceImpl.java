@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -24,11 +25,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(Long id) {
-        try {
-            return this.userRepository.findById(id).get();
-        } catch (NoSuchElementException e){
-            throw new ResourceNotFoundException();
-        }
+        return this.userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+    }
+
+    @Override
+    public User findByUsername(String username) {
+        return this.userRepository.findAll()
+                .stream().filter(u -> Objects.equals(u.getName(), username)).findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException());
     }
 
     @Override

@@ -38,11 +38,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment findById(Long id) {
-        try {
-            return this.commentRepository.findById(id).get();
-        } catch (NoSuchElementException e){
-            throw new ResourceNotFoundException();
-        }
+        return this.commentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
     }
 
     @Override

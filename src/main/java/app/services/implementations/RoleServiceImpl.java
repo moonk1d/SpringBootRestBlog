@@ -24,11 +24,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role findById(Long id) {
-        try {
-            return this.roleRepository.findById(id).get();
-        } catch (NoSuchElementException e){
-            throw new ResourceNotFoundException();
-        }
+        return this.roleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
     }
 
     @Override
