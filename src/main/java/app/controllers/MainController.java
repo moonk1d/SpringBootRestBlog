@@ -5,10 +5,15 @@ import app.ExceptionHandler.exceptions.*;
 import app.validators.QueryParametersValidator;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
+
+import java.util.Date;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
@@ -41,7 +46,11 @@ public class MainController {
         return page;
     }
 
-    @ExceptionHandler({LimitException.class, OffsetException.class, IdException.class, ResourceNotFoundException.class, FieldIsRequiredException.class})
+    @ExceptionHandler({LimitException.class,
+            OffsetException.class,
+            IdException.class,
+            ResourceNotFoundException.class,
+            FieldIsRequiredException.class})
     public ResponseEntity<ErrorResponse> exceptionHandler(CustomApiException ex) {
         ErrorResponse error = new ErrorResponse();
         error.setCode(ex.getCode());
@@ -52,5 +61,19 @@ public class MainController {
         }
 
         return new ResponseEntity<ErrorResponse>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({MethodArgumentNotValidException.class})
+    protected ResponseEntity<ErrorResponse> exceptionHandler(MethodArgumentNotValidException ex) {
+        ErrorDetails errorDetails = new ErrorDetails();
+        errorDetails.setTimestamp(new Date());
+        errorDetails.setCode("Validation Failed");
+
+        String message = ex.getBindingResult().getFieldError().getDefaultMessage();
+        String field = ex.getBindingResult().getFieldError().getField();
+
+        errorDetails.setMessage(String.format("'%s' field %s", field, message));
+
+        return new ResponseEntity(errorDetails, HttpStatus.BAD_REQUEST);
     }
 }

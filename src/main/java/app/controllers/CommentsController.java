@@ -20,6 +20,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
@@ -37,16 +38,9 @@ public class CommentsController extends MainController {
 
     @GetMapping(value = "/comments/{id}", produces = "application/json")
     public Comment viewComment(@PathVariable("id") String id) {
-        if (id != null) {
-            QueryParametersValidator.validateIdQueryParameter(id);
-        }
+        QueryParametersValidator.validateIdQueryParameter(id);
 
-        Comment comment = commentService.findById(Long.valueOf(id));
-        if (comment == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        return comment;
+        return commentService.findById(Long.valueOf(id));
     }
 
     @GetMapping(value = "/comments", produces = "application/json")
@@ -94,35 +88,22 @@ public class CommentsController extends MainController {
         Post post = postService.findById(comment.getPost().getId());
         User author = userService.findById(comment.getAuthor().getId());
 
-        if (post == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        if (author == null) {
-            throw new ResourceNotFoundException();
-        }
-
         comment.setPost(post);
         comment.setAuthor(author);
-        Long newCommentId = commentService.create(comment).getId();
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newCommentId).toUri();
-
-        return ResponseEntity.created(location).build();
+        return ResponseEntity
+                .created(ServletUriComponentsBuilder
+                        .fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(commentService.create(comment).getId())
+                        .toUri())
+                .build();
     }
 
     @PatchMapping(value = "/comments/{id}")
     public ResponseEntity updateComment(@PathVariable("id") String id, @RequestBody Comment comment) {
-
-        if (id == null) {
-            throw new IdException();
-        }
-
+        QueryParametersValidator.validateIdQueryParameter(id);
         Comment updatedComment = commentService.findById(Long.valueOf(id));
-
-        if (updatedComment == null) {
-            throw new ResourceNotFoundException();
-        }
 
         if (comment.getContent() != null) {
             updatedComment.setContent(comment.getContent());
@@ -130,23 +111,19 @@ public class CommentsController extends MainController {
 
         commentService.create(updatedComment);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
-
-        return ResponseEntity.created(location).build();
+        return ResponseEntity
+                .created(ServletUriComponentsBuilder
+                        .fromCurrentRequest()
+                        .build()
+                        .toUri())
+                .build();
     }
 
     @DeleteMapping(value = "/comments/{id}")
     public ResponseEntity deleteComment(@PathVariable("id") String id) {
-
-        if (id == null) {
-            throw new IdException();
-        }
+        QueryParametersValidator.validateIdQueryParameter(id);
 
         Comment comment = commentService.findById(Long.valueOf(id));
-
-        if (comment == null) {
-            throw new ResourceNotFoundException();
-        }
 
         commentService.deleteById(comment.getId());
 
@@ -156,16 +133,6 @@ public class CommentsController extends MainController {
     public void checkRequiredFieldsForComment(Comment comment) {
         Long postId = comment.getPost().getId();
         Long userId = comment.getAuthor().getId();
-        String content = comment.getContent();
-        Date date = comment.getCreationDate();
-
-        if (date == null) {
-            throw new FieldIsRequiredException("'creationDate' field is required.");
-        }
-
-        if (content == null) {
-            throw new FieldIsRequiredException("'content' field is required.");
-        }
 
         if (postId == null) {
             throw new FieldIsRequiredException("'post id' is required.");

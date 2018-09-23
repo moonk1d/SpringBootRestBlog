@@ -1,5 +1,6 @@
 package app.services.implementations;
 
+import app.ExceptionHandler.exceptions.ResourceNotFoundException;
 import app.models.Comment;
 import app.models.Post;
 import app.models.User;
@@ -11,7 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +22,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Primary
-public class CommentServiceJpaImpl implements CommentService {
+public class CommentServiceImpl implements CommentService {
     @Autowired
     private CommentRepository commentRepository;
 
@@ -35,7 +38,11 @@ public class CommentServiceJpaImpl implements CommentService {
 
     @Override
     public Comment findById(Long id) {
-        return this.commentRepository.findOne(id);
+        try {
+            return this.commentRepository.findById(id).get();
+        } catch (NoSuchElementException e){
+            throw new ResourceNotFoundException();
+        }
     }
 
     @Override
@@ -45,7 +52,7 @@ public class CommentServiceJpaImpl implements CommentService {
 
     @Override
     public void deleteById(Long id) {
-        this.commentRepository.delete(id);
+        this.commentRepository.deleteById(id);
     }
 
     @Override
@@ -54,7 +61,6 @@ public class CommentServiceJpaImpl implements CommentService {
                 .filter(c -> Objects.equals(c.getPost(), post))
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public List<Comment> findByAuthor(User author, Pageable page) {
@@ -70,6 +76,4 @@ public class CommentServiceJpaImpl implements CommentService {
                 .filter(c -> Objects.equals(c.getPost(), post))
                 .collect(Collectors.toList());
     }
-
-
 }

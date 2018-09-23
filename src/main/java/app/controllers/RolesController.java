@@ -1,8 +1,5 @@
 package app.controllers;
 
-import app.ExceptionHandler.exceptions.FieldIsRequiredException;
-import app.ExceptionHandler.exceptions.IdException;
-import app.ExceptionHandler.exceptions.ResourceNotFoundException;
 import app.models.Role;
 import app.services.interfaces.RoleService;
 import app.validators.QueryParametersValidator;
@@ -26,17 +23,10 @@ public class RolesController extends MainController {
     private RoleService roleService;
 
     @GetMapping(value = "/roles/{id}", produces = "application/json")
-    public Role viewRole(@PathVariable("id") String id) {
-        if (id != null) {
-            QueryParametersValidator.validateIdQueryParameter(id);
-        }
+    public Role viewRole(@PathVariable(value = "id") String id) {
+        QueryParametersValidator.validateIdQueryParameter(id);
 
-        Role role = roleService.findById(Long.valueOf(id));
-        if (role == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        return role;
+        return roleService.findById(Long.valueOf(id));
     }
 
     @GetMapping(value = "/roles", produces = "application/json")
@@ -50,9 +40,7 @@ public class RolesController extends MainController {
     }
 
     @PostMapping(value = "/roles")
-    public ResponseEntity createPost(@Valid @RequestBody Role role) {
-        checkRequiredFieldsForRole(role);
-
+    public ResponseEntity createRole(@Valid @RequestBody Role role) {
         Long newPostId = roleService.create(role).getId();
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newPostId).toUri();
@@ -61,23 +49,13 @@ public class RolesController extends MainController {
     }
 
     @PatchMapping(value = "/roles/{id}")
-    public ResponseEntity updateRole(@PathVariable("id") String id, @RequestBody Role role) {
+    public ResponseEntity updateRole(@PathVariable(value = "id") String id, @Valid @RequestBody Role role) {
+        QueryParametersValidator.validateIdQueryParameter(id);
 
-        if (id == null) {
-            throw new IdException();
-        }
+        Role updatedRole = roleService.findById(Long.valueOf(id));
+        updatedRole.setRole(role.getRole());
 
-        Role updatedPost = roleService.findById(Long.valueOf(id));
-
-        if (updatedPost == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        if (role.getRole() != null) {
-            updatedPost.setRole(role.getRole());
-        }
-
-        roleService.create(updatedPost);
+        roleService.create(updatedRole);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
 
@@ -85,28 +63,13 @@ public class RolesController extends MainController {
     }
 
     @DeleteMapping(value = "/roles/{id}")
-    public ResponseEntity deleteRole(@PathVariable("id") String id) {
-
-        if (id == null) {
-            throw new IdException();
-        }
+    public ResponseEntity deleteRole(@PathVariable(value = "id") String id) {
+        QueryParametersValidator.validateIdQueryParameter(id);
 
         Role role = roleService.findById(Long.valueOf(id));
-
-        if (role == null) {
-            throw new ResourceNotFoundException();
-        }
 
         roleService.deleteById(role.getId());
 
         return ResponseEntity.noContent().build();
-    }
-
-    public void checkRequiredFieldsForRole(Role role) {
-        String roleName = role.getRole();
-
-        if (roleName == null) {
-            throw new FieldIsRequiredException("'role' field is required.");
-        }
     }
 }

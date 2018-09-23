@@ -1,5 +1,6 @@
 package app.services.implementations;
 
+import app.ExceptionHandler.exceptions.ResourceNotFoundException;
 import app.models.Post;
 import app.models.User;
 import app.repositories.PostRepository;
@@ -10,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +27,11 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post findById(Long id) {
-        return this.postRepository.findOne(id);
+        try {
+            return this.postRepository.findById(id).get();
+        } catch (NoSuchElementException e){
+            throw new ResourceNotFoundException();
+        }
     }
 
     @Override
@@ -39,7 +46,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deleteById(Long id) {
-        this.postRepository.delete(id);
+        this.postRepository.deleteById(id);
     }
 
     @Override

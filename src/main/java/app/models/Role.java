@@ -3,6 +3,8 @@ package app.models;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by Andrey on 27.07.2018.
@@ -15,7 +17,9 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @NotNull(message = "is required")
+    @Size(min = 1, max = 30, message = "should be in range [1,30]")
+    @Column
     private String role;
 
     public Role() {

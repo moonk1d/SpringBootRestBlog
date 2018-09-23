@@ -1,5 +1,6 @@
 package app.services.implementations;
 
+import app.ExceptionHandler.exceptions.ResourceNotFoundException;
 import app.models.User;
 import app.repositories.UserRepository;
 import app.services.interfaces.UserService;
@@ -9,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
@@ -21,7 +24,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(Long id) {
-        return this.userRepository.findOne(id);
+        try {
+            return this.userRepository.findById(id).get();
+        } catch (NoSuchElementException e){
+            throw new ResourceNotFoundException();
+        }
     }
 
     @Override
@@ -36,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(Long id) {
-        this.userRepository.delete(id);
+        this.userRepository.deleteById(id);
     }
 
     @Override

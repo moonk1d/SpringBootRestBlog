@@ -16,9 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
@@ -36,16 +38,9 @@ public class UsersController extends MainController {
 
     @GetMapping(value = "/users/{id}", produces = "application/json")
     public User viewUser(@PathVariable("id") String id) {
-        if (id != null) {
-            QueryParametersValidator.validateIdQueryParameter(id);
-        }
+        QueryParametersValidator.validateIdQueryParameter(id);
 
-        User user = userService.findById(Long.valueOf(id));
-        if (user == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        return user;
+        return userService.findById(Long.valueOf(id));
     }
 
     @GetMapping(value = "/users", produces = "application/json")
@@ -59,29 +54,24 @@ public class UsersController extends MainController {
     }
 
     @PostMapping(value = "/users")
-    public ResponseEntity createUser(@RequestBody User user) {
+    public ResponseEntity createUser(@Valid @RequestBody User user) {
         checkRequiredFieldsForUser(user);
 
         Role role = roleService.findById(user.getRole().getId());
-
-        if (role == null) {
-            throw new ResourceNotFoundException();
-        }
-
         user.setRole(role);
-        Long newUserId = userService.create(user).getId();
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newUserId).toUri();
-
-        return ResponseEntity.created(location).build();
+        return ResponseEntity
+                .created(ServletUriComponentsBuilder
+                        .fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(userService.create(user).getId())
+                        .toUri())
+                .build();
     }
 
     @PatchMapping(value = "/users/{id}")
     public ResponseEntity updateUser(@PathVariable("id") String id, @RequestBody User user) {
-
-        if (id == null) {
-            throw new IdException();
-        }
+        QueryParametersValidator.validateIdQueryParameter(id);
 
         User updatedUser = userService.findById(Long.valueOf(id));
 
@@ -100,55 +90,32 @@ public class UsersController extends MainController {
         if (user.getRole().getId() != null) {
             Role role = roleService.findById(user.getRole().getId());
 
-            if(role == null) {
-                throw new ResourceNotFoundException();
-            }
-
             updatedUser.setRole(role);
         }
 
         userService.create(updatedUser);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
-
-        return ResponseEntity.created(location).build();
+        return ResponseEntity
+                .created(ServletUriComponentsBuilder
+                        .fromCurrentRequest()
+                        .build()
+                        .toUri())
+                .build();
     }
 
     @DeleteMapping(value = "/users/{id}")
     public ResponseEntity deleteUser(@PathVariable("id") String id) {
+        QueryParametersValidator.validateIdQueryParameter(id);
 
-        if (id == null) {
-            throw new IdException();
-        }
+        User user = userService.findById(Long.valueOf(id));
 
-        User us = userService.findById(Long.valueOf(id));
-
-        if (us == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        userService.deleteById(us.getId());
+        userService.deleteById(user.getId());
 
         return ResponseEntity.noContent().build();
     }
 
     public void checkRequiredFieldsForUser(User user) {
         Long roleId = user.getRole().getId();
-        String name = user.getName();
-        String password = user.getPassword();
-        Date date = user.getCreationDate();
-
-        if (date == null) {
-            throw new FieldIsRequiredException("'creationDate' field is required.");
-        }
-
-        if (name == null) {
-            throw new FieldIsRequiredException("'name' field is required.");
-        }
-
-        if (password == null) {
-            throw new FieldIsRequiredException("'password' field is required.");
-        }
 
         if (roleId == null) {
             throw new FieldIsRequiredException("'role id' field is required.");
