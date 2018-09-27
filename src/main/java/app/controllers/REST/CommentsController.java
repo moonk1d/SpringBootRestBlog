@@ -1,8 +1,6 @@
-package app.controllers;
+package app.controllers.REST;
 
 import app.ExceptionHandler.exceptions.FieldIsRequiredException;
-import app.ExceptionHandler.exceptions.IdException;
-import app.ExceptionHandler.exceptions.ResourceNotFoundException;
 import app.models.Comment;
 import app.models.Post;
 import app.models.User;
@@ -17,15 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
  */
 @RestController
+@RequestMapping(value = "api/comments")
 public class CommentsController extends MainController {
     @Autowired
     private CommentService commentService;
@@ -36,52 +32,65 @@ public class CommentsController extends MainController {
     @Autowired
     private UserService userService;
 
-    @GetMapping(value = "/comments/{id}", produces = "application/json")
+    @GetMapping(value = "{id}", produces = "application/json")
     public Comment viewComment(@PathVariable("id") String id) {
         QueryParametersValidator.validateIdQueryParameter(id);
 
         return commentService.findById(Long.valueOf(id));
     }
 
-    @GetMapping(value = "/comments", produces = "application/json")
+    @GetMapping(produces = "application/json")
     public ResponseEntity<List<Comment>> listComments(
-            @RequestParam(value = "postId", required = false) String postId,
-            @RequestParam(value = "userId", required = false) String userId,
             @RequestParam(value = "limit", required = false) String limit,
             @RequestParam(value = "offset", required = false) String offset) {
 
         Pageable page = pageRequestBuilder(offset, limit);
 
-        if (postId != null) {
-            QueryParametersValidator.validateIdQueryParameter(postId);
-        }
-
-        if (userId != null) {
-            QueryParametersValidator.validateIdQueryParameter(userId);
-        }
-
-        Post post;
-        User author;
-
-        if (postId == null && userId == null) {
-            return new ResponseEntity<>(commentService.findAll(page), HttpStatus.OK);
-        } else if (postId != null && userId == null) {
-            post = postService.findById(Long.valueOf(postId));
-
-            return new ResponseEntity<>(commentService.findByPost(post, page), HttpStatus.OK);
-        } else if (userId != null && postId == null) {
-            author = userService.findById(Long.valueOf(userId));
-
-            return new ResponseEntity<>(commentService.findByAuthor(author, page), HttpStatus.OK);
-        } else {
-            post = postService.findById(Long.valueOf(postId));
-            author = userService.findById(Long.valueOf(userId));
-
-            return new ResponseEntity<>(commentService.findByAuthorAndPost(post, author, page), HttpStatus.OK);
-        }
+        return new ResponseEntity<>(commentService.findAll(page), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/comments")
+    @GetMapping(value = "users/{userid}/posts/{postid}", produces = "application/json")
+    public ResponseEntity<List<Comment>> listCommentsByUserByPost(
+            @PathVariable("userid") String userId,
+            @PathVariable("postid") String postId,
+            @RequestParam(value = "limit", required = false) String limit,
+            @RequestParam(value = "offset", required = false) String offset) {
+
+        Pageable page = pageRequestBuilder(offset, limit);
+
+        Post post = postService.findById(Long.valueOf(postId));
+        User author = userService.findById(Long.valueOf(userId));
+
+        return new ResponseEntity<>(commentService.findByAuthorAndPost(post, author, page), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "users/{userid}", produces = "application/json")
+    public ResponseEntity<List<Comment>> listCommentsByUser(
+            @PathVariable("userid") String userId,
+            @RequestParam(value = "limit", required = false) String limit,
+            @RequestParam(value = "offset", required = false) String offset) {
+
+        Pageable page = pageRequestBuilder(offset, limit);
+
+        User author = userService.findById(Long.valueOf(userId));
+
+        return new ResponseEntity<>(commentService.findByAuthor(author, page), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "posts/{postid}", produces = "application/json")
+    public ResponseEntity<List<Comment>> listCommentsByPost(
+            @PathVariable("postid") String postId,
+            @RequestParam(value = "limit", required = false) String limit,
+            @RequestParam(value = "offset", required = false) String offset) {
+
+        Pageable page = pageRequestBuilder(offset, limit);
+
+        Post post = postService.findById(Long.valueOf(postId));
+
+        return new ResponseEntity<>(commentService.findByPost(post, page), HttpStatus.OK);
+    }
+
+    @PostMapping()
     public ResponseEntity createComment(@RequestBody Comment comment) {
         checkRequiredFieldsForComment(comment);
 
@@ -100,7 +109,7 @@ public class CommentsController extends MainController {
                 .build();
     }
 
-    @PatchMapping(value = "/comments/{id}")
+    @PatchMapping(value = "{id}")
     public ResponseEntity updateComment(@PathVariable("id") String id, @RequestBody Comment comment) {
         QueryParametersValidator.validateIdQueryParameter(id);
         Comment updatedComment = commentService.findById(Long.valueOf(id));
@@ -119,7 +128,7 @@ public class CommentsController extends MainController {
                 .build();
     }
 
-    @DeleteMapping(value = "/comments/{id}")
+    @DeleteMapping(value = "{id}")
     public ResponseEntity deleteComment(@PathVariable("id") String id) {
         QueryParametersValidator.validateIdQueryParameter(id);
 

@@ -1,8 +1,6 @@
-package app.controllers;
+package app.controllers.REST;
 
 import app.ExceptionHandler.exceptions.FieldIsRequiredException;
-import app.ExceptionHandler.exceptions.IdException;
-import app.ExceptionHandler.exceptions.ResourceNotFoundException;
 import app.models.Post;
 import app.models.User;
 import app.services.interfaces.PostService;
@@ -16,15 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
  */
 @RestController
+@RequestMapping(value = "api/posts")
 public class PostsController extends MainController {
     @Autowired
     private PostService postService;
@@ -32,37 +28,38 @@ public class PostsController extends MainController {
     @Autowired
     private UserService userService;
 
-    @GetMapping(value = "/posts/{id}", produces = "application/json")
+    @GetMapping(value = "{id}", produces = "application/json")
     public Post viewPost(@PathVariable("id") String id) {
         QueryParametersValidator.validateIdQueryParameter(id);
 
         return postService.findById(Long.valueOf(id));
     }
 
-    @GetMapping(value = "/posts", produces = "application/json")
+    @GetMapping(produces = "application/json")
     public ResponseEntity<List<Post>> listPosts(
-            @RequestParam(value = "userId", required = false) String userId,
             @RequestParam(value = "limit", required = false) String limit,
             @RequestParam(value = "offset", required = false) String offset) {
 
         Pageable page = pageRequestBuilder(offset, limit);
 
-        if (userId != null) {
-            QueryParametersValidator.validateIdQueryParameter(userId);
-        }
-
-        User author;
-
-        if (userId == null) {
-            return new ResponseEntity<>(postService.findAll(page), HttpStatus.OK);
-        } else {
-            author = userService.findById(Long.valueOf(userId));
-
-            return new ResponseEntity<>(postService.findAll(author, page), HttpStatus.OK);
-        }
+        return new ResponseEntity<>(postService.findAll(page), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/posts")
+    @GetMapping(value = "users/{id}", produces = "application/json")
+    public ResponseEntity<List<Post>> listPostsByUser(
+            @PathVariable("id") String id,
+            @RequestParam(value = "limit", required = false) String limit,
+            @RequestParam(value = "offset", required = false) String offset) {
+
+        Pageable page = pageRequestBuilder(offset, limit);
+
+        User author = userService.findById(Long.valueOf(id));
+
+        return new ResponseEntity<>(postService.findAll(author, page), HttpStatus.OK);
+    }
+
+
+    @PostMapping
     public ResponseEntity createPost(@Valid @RequestBody Post post) {
         checkRequiredFieldsForPost(post);
 
@@ -77,7 +74,7 @@ public class PostsController extends MainController {
                 .build();
     }
 
-    @PatchMapping(value = "/posts/{id}")
+    @PatchMapping(value = "{id}")
     public ResponseEntity updatePost(@PathVariable("id") String id, @RequestBody Post post) {
         QueryParametersValidator.validateIdQueryParameter(id);
         Post updatedPost = postService.findById(Long.valueOf(id));
@@ -100,7 +97,7 @@ public class PostsController extends MainController {
                 .build();
     }
 
-    @DeleteMapping(value = "/posts/{id}")
+    @DeleteMapping(value = "{id}")
     public ResponseEntity deletePost(@PathVariable("id") String id) {
         QueryParametersValidator.validateIdQueryParameter(id);
         Post post = postService.findById(Long.valueOf(id));

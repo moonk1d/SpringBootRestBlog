@@ -1,7 +1,6 @@
-package app.controllers;
+package app.controllers.REST;
 
 import app.ExceptionHandler.exceptions.FieldIsRequiredException;
-import app.ExceptionHandler.exceptions.IdException;
 import app.ExceptionHandler.exceptions.ResourceNotFoundException;
 import app.models.Role;
 import app.models.User;
@@ -17,15 +16,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by Andrey Nazarov on 7/27/2018.
  */
 @RestController
+@RequestMapping(value = "api/users")
 public class UsersController extends MainController {
     @Autowired
     private PostService postService;
@@ -36,14 +33,14 @@ public class UsersController extends MainController {
     @Autowired
     private RoleService roleService;
 
-    @GetMapping(value = "/users/{id}", produces = "application/json")
+    @GetMapping(value = "{id}", produces = "application/json")
     public User viewUser(@PathVariable("id") String id) {
         QueryParametersValidator.validateIdQueryParameter(id);
 
         return userService.findById(Long.valueOf(id));
     }
 
-    @GetMapping(value = "/users", produces = "application/json")
+    @GetMapping(produces = "application/json")
     public ResponseEntity<List<User>> listUsers(
             @RequestParam(value = "limit", required = false) String limit,
             @RequestParam(value = "offset", required = false) String offset) {
@@ -53,7 +50,7 @@ public class UsersController extends MainController {
         return new ResponseEntity<>(userService.findAll(page), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/users")
+    @PostMapping
     public ResponseEntity createUser(@Valid @RequestBody User user) {
         checkRequiredFieldsForUser(user);
 
@@ -69,7 +66,7 @@ public class UsersController extends MainController {
                 .build();
     }
 
-    @PatchMapping(value = "/users/{id}")
+    @PatchMapping(value = "{id}")
     public ResponseEntity updateUser(@PathVariable("id") String id, @RequestBody User user) {
         QueryParametersValidator.validateIdQueryParameter(id);
 
@@ -103,7 +100,7 @@ public class UsersController extends MainController {
                 .build();
     }
 
-    @DeleteMapping(value = "/users/{id}")
+    @DeleteMapping(value = "{id}")
     public ResponseEntity deleteUser(@PathVariable("id") String id) {
         QueryParametersValidator.validateIdQueryParameter(id);
 

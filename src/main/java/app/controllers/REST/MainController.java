@@ -1,17 +1,15 @@
-package app.controllers;
+package app.controllers.REST;
 
 import app.ExceptionHandler.ErrorResponse;
 import app.ExceptionHandler.exceptions.*;
 import app.validators.QueryParametersValidator;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
 
 import java.util.Date;
 
