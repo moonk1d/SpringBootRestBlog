@@ -2,6 +2,7 @@ package app.controllers.REST;
 
 import app.ExceptionHandler.exceptions.FieldIsRequiredException;
 import app.models.Post;
+import app.models.Posts;
 import app.models.User;
 import app.services.interfaces.PostService;
 import app.services.interfaces.UserService;
@@ -10,6 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -36,13 +41,15 @@ public class PostsController extends MainController {
     }
 
     @GetMapping(produces = "application/json")
-    public ResponseEntity<List<Post>> listPosts(
+    public ResponseEntity<Posts> listPosts(
             @RequestParam(value = "limit", required = false) String limit,
             @RequestParam(value = "offset", required = false) String offset) {
 
         Pageable page = pageRequestBuilder(offset, limit);
 
-        return new ResponseEntity<>(postService.findAll(page), HttpStatus.OK);
+        Posts posts = new Posts(postService.findAll(page));
+
+        return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
     @GetMapping(value = "users/{id}", produces = "application/json")
@@ -63,7 +70,7 @@ public class PostsController extends MainController {
     public ResponseEntity createPost(@Valid @RequestBody Post post) {
         checkRequiredFieldsForPost(post);
 
-        post.setAuthor(userService.findById(post.getAuthor().getId()));
+        post.setAuthor(userService.findById(getCurrentUserId()));
 
         return ResponseEntity
                 .created(ServletUriComponentsBuilder
@@ -113,6 +120,12 @@ public class PostsController extends MainController {
         if (userId == null) {
             throw new FieldIsRequiredException("'author id' is required.");
         }
+    }
+
+    public Long getCurrentUserId() {
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return userService.findByUsername(name).getId();
     }
 
 }

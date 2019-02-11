@@ -32,14 +32,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
 
         // All requests send to the Web Server request must be authenticated
-        http.authorizeRequests()
-                .antMatchers("api/posts", "api/posts/**", "api/comments", "api/comments/**").permitAll()
-//                .antMatchers("api/roles", "api/roles/**", "api/users", "api/users/**").hasAnyRole("ADMIN", "USER")
-                .antMatchers("api/roles", "api/roles/**", "api/users", "api/users/**").permitAll()
-                .anyRequest().authenticated();
+//        http.authorizeRequests();
+//                .requestMatchers()
+//                .antMatchers("api/posts", "api/posts/**", "api/comments", "api/comments/**").permitAll()
+//                .antMatchers("api/roles", "api/roles/**", "api/users", "api/users/**").hasAnyRole("ADMIN")
+//                .antMatchers("api/roles", "api/roles/**", "api/users", "api/users/**").permitAll()
+//                .anyRequest().authenticated();
+
+        http.authorizeRequests().anyRequest().authenticated();
 
         // Use AuthenticationEntryPoint to authenticate user/password
-        http.httpBasic().authenticationEntryPoint(authEntryPoint);
+        http.httpBasic();
+        //http.httpBasic().authenticationEntryPoint(authEntryPoint);
     }
 
     @Bean
